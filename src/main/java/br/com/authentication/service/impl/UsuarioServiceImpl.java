@@ -4,6 +4,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -14,6 +17,10 @@ import br.com.authentication.dto.response.UsuarioResponseDTO;
 import br.com.authentication.entity.Telefone;
 import br.com.authentication.entity.Usuario;
 import br.com.authentication.exception.EmailExistenteException;
+import br.com.authentication.exception.SessaoInvalidaException;
+import br.com.authentication.exception.TokenHeaderErrorException;
+import br.com.authentication.exception.TokenInvalidoException;
+import br.com.authentication.exception.UsuarioNuloException;
 import br.com.authentication.repository.UsuarioRepository;
 import br.com.authentication.service.UsuarioService;
 import br.com.authentication.utils.JwtTokenUtil;
@@ -49,4 +56,40 @@ public class UsuarioServiceImpl implements UsuarioService {
 		return convertModalMapper.convertParaResponseDTO(repository.save(usuario));
 	}
 
+	@Override
+	public UsuarioResponseDTO consultarPerfil(String id, HttpServletRequest request) {
+		Usuario usuario = consultar(id);
+		String token = request.getHeader("Authorization");
+		if (StringUtils.isBlank(token)) {
+			throw new TokenHeaderErrorException();
+		}
+		if (!usuario.getToken().equals(token)) {
+			throw new TokenInvalidoException();
+		}
+		if (repository.existsByToken(usuario.getToken())) {
+			validarAcesso(usuario.getId());
+			usuario.setDataUltimoAcesso(LocalDateTime.now());
+			usuario.setToken(jwtTokenUtil.generateToken(usuario));
+			usuario.setDataModificacao(LocalDateTime.now());
+			usuario.setDataUltimoAcesso(LocalDateTime.now());
+			return convertModalMapper.convertParaResponseDTO(repository.save(usuario));
+		}
+		return null;
+	}
+
+	private Usuario consultar(String id) {
+		Usuario usuario = repository.findById(id);
+		if (usuario != null) {
+			return usuario;
+		}
+		throw new UsuarioNuloException();
+	}
+
+	private void validarAcesso(String id) {
+		Usuario usuario = repository.findById(id);
+		if (usuario != null && usuario.getDataUltimoAcesso().getMinute() < 30) {
+			throw new SessaoInvalidaException();
+		}
+		throw new UsuarioNuloException();
+	}
 }

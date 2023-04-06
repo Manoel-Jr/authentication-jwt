@@ -6,11 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import br.com.authentication.core.ConvertModalMapper;
-import br.com.authentication.core.ValidarTokenAuthentication;
+import br.com.authentication.core.ValidarLoginAuthentication;
 import br.com.authentication.dto.request.LoginDTORequest;
 import br.com.authentication.dto.response.UsuarioResponseDTO;
 import br.com.authentication.entity.Usuario;
-import br.com.authentication.exception.EmailInvalidoException;
+import br.com.authentication.exception.EmailOuSenhaInvalidoException;
 import br.com.authentication.repository.UsuarioRepository;
 import br.com.authentication.service.LoginService;
 
@@ -24,7 +24,7 @@ public class LoginServiceImpl implements LoginService {
 	private ConvertModalMapper convertModalMapper;
 
 	@Autowired
-	private ValidarTokenAuthentication validarTokenAuthentication;
+	private ValidarLoginAuthentication validarTokenAuthentication;
 
 	public UsuarioResponseDTO login(LoginDTORequest login, HttpServletRequest request) {
 		Usuario usuario = consultar(login.getEmail());
@@ -37,6 +37,7 @@ public class LoginServiceImpl implements LoginService {
 		if (user != null) {
 			return user;
 		}
-		throw new EmailInvalidoException(email);
+		throw new EmailOuSenhaInvalidoException();
 	}
+
 }

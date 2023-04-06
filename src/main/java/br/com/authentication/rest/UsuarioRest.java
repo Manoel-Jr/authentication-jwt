@@ -1,8 +1,11 @@
 package br.com.authentication.rest;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,4 +27,8 @@ public class UsuarioRest {
 		return new ResponseEntity<>(usuarioService.cadastrar(usuario), HttpStatus.CREATED);
 	}
 
+	@PostMapping("/consultar/{id}")
+	public ResponseEntity<UsuarioResponseDTO> retornar(@PathVariable String id, HttpServletRequest request) {
+		return new ResponseEntity<>(usuarioService.consultarPerfil(id, request), HttpStatus.OK);
+	}
 }
