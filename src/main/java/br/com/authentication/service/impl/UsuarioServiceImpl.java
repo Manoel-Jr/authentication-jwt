@@ -87,7 +87,7 @@ public class UsuarioServiceImpl implements UsuarioService {
 
 	private void validarAcesso(String id) {
 		Usuario usuario = repository.findById(id);
-		if (usuario != null && usuario.getDataUltimoAcesso().getMinute() < 30) {
+		if (usuario != null && usuario.getDataUltimoAcesso().getMinute() > 30) {
 			throw new SessaoInvalidaException();
 		}
 		throw new UsuarioNuloException();
