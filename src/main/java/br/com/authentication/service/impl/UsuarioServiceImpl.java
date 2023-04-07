@@ -69,7 +69,6 @@ public class UsuarioServiceImpl implements UsuarioService {
 		if (repository.existsByToken(usuario.getToken())) {
 			validarAcesso(usuario.getId());
 			usuario.setDataUltimoAcesso(LocalDateTime.now());
-			usuario.setToken(jwtTokenUtil.generateToken(usuario));
 			usuario.setDataModificacao(LocalDateTime.now());
 			usuario.setDataUltimoAcesso(LocalDateTime.now());
 			return convertModalMapper.convertParaResponseDTO(repository.save(usuario));
@@ -85,11 +84,14 @@ public class UsuarioServiceImpl implements UsuarioService {
 		throw new UsuarioNuloException();
 	}
 
-	private void validarAcesso(String id) {
+	private UsuarioResponseDTO validarAcesso(String id) {
 		Usuario usuario = repository.findById(id);
-		if (usuario != null && usuario.getDataUltimoAcesso().getMinute() > 30) {
-			throw new SessaoInvalidaException();
+		if (usuario == null) {
+			throw new UsuarioNuloException();
 		}
-		throw new UsuarioNuloException();
+		if (usuario != null && usuario.getDataUltimoAcesso().getMinute() < 30) {
+			return convertModalMapper.convertParaResponseDTO(usuario);
+		}
+		throw new SessaoInvalidaException();
 	}
 }
