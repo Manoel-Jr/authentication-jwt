@@ -89,9 +89,9 @@ public class UsuarioServiceImpl implements UsuarioService {
 		if (usuario == null) {
 			throw new UsuarioNuloException();
 		}
-		if (usuario != null && usuario.getDataUltimoAcesso().getMinute() < 30) {
-			return convertModalMapper.convertParaResponseDTO(usuario);
+		if (usuario != null && usuario.getDataUltimoAcesso().getMinute() > 30) {
+			throw new SessaoInvalidaException();
 		}
-		throw new SessaoInvalidaException();
+		return convertModalMapper.convertParaResponseDTO(usuario);
 	}
 }
